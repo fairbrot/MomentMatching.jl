@@ -85,7 +85,6 @@ int HKW_ScenGen(int const FormatOfMoms, TMatrix const * const p_TarMoms,
 
 	// Transform the target moments
 	Mat_InitAsBigAs(&TgMoms, p_TarMoms);
-	printf("Calculating moments...\n");
 	CreateTargetMoments(nVar, nScen, (unsigned short) FormatOfMoms,
 	                    p_TarMoms->val, TgMoms.val);
 	if (TestLevel > 3) {
@@ -479,25 +478,12 @@ int scengen_HKW_julia(double * const tgMoms, int const FormatOfMoms,
 		      double * p_errMom, double * p_errCorr,
 		      int * p_nmbTrial, int * p_nmbIter)
 {
-  int i,j;
+  int i;
   double **tgMoms_dPtr = (double **)calloc(4, sizeof(double*));
   for (i = 0; i < 4; ++i) tgMoms_dPtr[i] = tgMoms + (i*nVar);
 
-
-  for (i = 0; i < nVar; ++i) {
-    for (j = 0; j < 4; ++j) {
-      printf("tgMoms_dPtr[%d][%d] = %.3f\n", j, i, tgMoms_dPtr[j][i]);
-    }
-  }
-
   double **tgCorrs_dPtr = (double **)calloc(nVar, sizeof(double*));
   for (i = 0; i < nVar; ++i) tgCorrs_dPtr[i] = tgCorrs + (i*nVar);
-
-  for (i = 0; i < nVar; ++i) {
-    for (j = 0; j < nVar; ++j) {
-      printf("tgMCorrs_dPtr[%d][%d] = %.3f\n", j, i, tgCorrs_dPtr[j][i]);
-    }
-  }
 
   double **outSc_dPtr = (double **)calloc(nVar, sizeof(double*));
   for (i = 0; i < nVar; ++i) outSc_dPtr[i] = outSc + (i*nScen);
