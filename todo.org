@@ -1,0 +1,21 @@
+* Ideas for MomentMatching package
+
+** TODO Test inputs in Julia code
+   - Simply add all checks in void CheckInput in sg_functions.h to Julia code
+   - Later, remove redundent extra check from C code
+
+** TODO Create more interfaces to Kaut function
+   - Alternative function for accepting initial probabilities
+   - Alternative functions for returning scenarios alone and scenarios with other output?
+
+** TODO Create unit tests
+   - Initially, simple tests that moments do match as stated
+   - Later, check Kaut executable produces same output as direct function
+   - Setup package on Travis
+
+** TODO Create Julia implementation for Ponomareva and Date (2014) method
+   - Initially, minimize number of parameters to be set
+   - Should return scenarios and probabilities
+   - Create combined function where this method acts as preprocess for Kaut method
+     
+** TODO Add documentation
