@@ -35,5 +35,5 @@ function scengen_HKW(tgMoms::Array{Float64, 2}, tgCorrs::Array{Float64, 2}, numS
     probs = [1.0/numScen for i=1:numScen]
     scengen_HKW!(tgMoms, tgCorrs, scenarios, probs, maxErrMom, maxErrCor,
                 maxTrial, maxIter, formatOfMoms)
-    return scenarios
+    return transpose(scenarios)
 end
