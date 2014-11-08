@@ -1,4 +1,4 @@
-using MomentMatching: scengen_HKW
+using MomentMatching
 using Base.Test
 
 function moments(x::Array{Float64, 2}, probs::Array{Float64, 1})
