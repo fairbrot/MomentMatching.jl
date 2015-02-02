@@ -18,7 +18,7 @@ function scengen_HKW!(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64},
                      scenarios::Matrix{Float64}, probs::Array{Float64, 1}, 
                      maxErrMom::Float64 = 1e-3, maxErrCor = 1e-3,
                      maxTrial::Int64 = 10, maxIter::Int64 = 20,
-                     formatOfMoms::Int64 = 0)
+                     formatOfMoms::Int64 = 2)
     dimMoms = size(tgMoms)
     dimCorrs = size(tgCorrs)
     dim = dimCorrs[1]
