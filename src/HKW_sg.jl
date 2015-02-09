@@ -42,7 +42,7 @@ function scengen_HKW(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64}, numScen:
                      maxErrMom::Float64 = 1e-3, maxErrCor = 1e-3,
                      maxTrial::Int64 = 10, maxIter::Int64 = 20,
                      formatOfMoms::Int64 = 4)
-    dim = size(tgCorrs)[1]
+    dim = size(tgCorrs,1)
     μ = tgMoms[:,1]
     Σ = cor_to_cov(tgCorrs, tgMoms[:,2])
     scenarios = Array(Float64, numScen, dim)
