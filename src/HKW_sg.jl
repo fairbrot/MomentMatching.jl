@@ -1,5 +1,3 @@
-# using Distributions
-
 dir = dirname(@__FILE__())
 const lib =  joinpath(dir, "libHKW_sg.so")
 
@@ -62,11 +60,11 @@ function moments(scenarios::Matrix{Float64}, probs::Vector{Float64})
 end
 
 
-# Warning:
+# Warning: this function should not be used directly
+#          for the following reasons:
 #  - function assumes inputted scenarios array rows
 #    representing scenario rather than columns
-#  - function will segfault if inconsistent dimensions are used
-#
+#  - function may segfault if inconsistent dimensions are used
 function scengen_HKW!(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64},
                      scenarios::Matrix{Float64}, probs::Array{Float64, 1}, 
                      maxErrMom::Float64 = 1e-3, maxErrCor = 1e-3,
@@ -89,10 +87,23 @@ function scengen_HKW!(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64},
                 C_NULL, C_NULL, C_NULL, C_NULL)
 end
 
+# Generates a scenario set which whose marginals have specified first four moments
+# and which has a specified correlation matrix.
+#
+# The specified moments are the mean, standard deviation, skewness and excess kurtosis
+#
+# Arguments:
+# - tgMoms target moments matrix where each row gives the first four moments of a marginal
+# - tgCorrs target correlation matrix
+# - numScen number of scenarios in constructed scenario set
+# - maxErrMom maximum allowed error from target moments
+# - maxErrCor maximum allowed error from target correlations
+# - maxTrial maximum number of times algorithm is restarted with new initial scenarios
+# - maxIter maximum number of iterations in one trial
 function scengen_HKW(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64}, numScen::Int64,
                      maxErrMom::Float64 = 1e-3, maxErrCor = 1e-3,
-                     maxTrial::Int64 = 10, maxIter::Int64 = 20,
-                     formatOfMoms::Int64 = 4)
+                     maxTrial::Int64 = 10, maxIter::Int64 = 20)
+    formatOfMoms = 4 # Mean, Std. Dev, Skewness, Excess kurtosis 
     dim = size(tgCorrs,1)
     scenarios = Array(Float64, numScen, dim)
     probs = fill(1.0/numScen, numScen)
