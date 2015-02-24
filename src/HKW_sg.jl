@@ -75,6 +75,8 @@ function scengen_HKW!(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64},
     #@assert(dimMoms[2] = 4, "Moments must be input in an n x 4 matrix")
     #@assert(dimCorrs[1] == dimCorrs[2], "Correlation matrix must be square")
     #@assert(dimCorrs[1] == dimMoms[1], "Moment and correlation matrices must have same number of rows")
+    errMom = Array(Float64,1)
+    errCorr = Array(Float64, 1)
     ccall( (:scengen_HKW_julia, lib),
                 Int64,
                 (Ptr{Float64}, Int64, Ptr{Float64}, Ptr{Float64},
@@ -84,7 +86,13 @@ function scengen_HKW!(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64},
                 copy(tgMoms), formatOfMoms, tgCorrs, probs,
                 dim, numScen, scenarios, maxErrMom, maxErrCor,
                 0, maxTrial, maxIter, 0,
-                C_NULL, C_NULL, C_NULL, C_NULL)
+                errMom, errCorr, C_NULL, C_NULL)
+    if errMom[1] > maxErrMom
+        warn("Error in moments is greater than maximum specified error")
+    end
+    if errCorr[1] > maxErrCor
+        warn("Error in correlations is greater than maximum specified error")
+    end
 end
 
 # Generates a scenario set which whose marginals have specified first four moments
