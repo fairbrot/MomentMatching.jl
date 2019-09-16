@@ -1,21 +1,6 @@
 dir = dirname(@__FILE__())
 const lib =  joinpath(dir, "libHKW_sg.so")
 
-# Calculates the covariance matrix given a correlation matrix
-# and vector of standard deviations
-function cor_to_cov(cor::Matrix{Float64}, std::Vector{Float64})
-    dim1, dim2 = size(cor)
-    dim1 == dim2 || throw(DimensionMismatch("correlation matrix must be square."))
-    length(std) == dim1 || throw(DimensionMismatch("correlation matrix an std. dev. vector have inconsistent dimensions."))
-    Σ = Array{Float64}(undef, dim1, dim1)
-    for i in 1:dim1
-        for j in 1:dim1
-            Σ[i,j] = cor[i,j]*std[i]*std[j]
-        end
-    end
-    Σ
-end
-
 # Calculate the first four moments
 # of multivariate observations.
 #
