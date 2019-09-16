@@ -7,7 +7,7 @@ function cor_to_cov(cor::Matrix{Float64}, std::Vector{Float64})
     dim1, dim2 = size(cor)
     dim1 == dim2 || throw(DimensionMismatch("correlation matrix must be square."))
     length(std) == dim1 || throw(DimensionMismatch("correlation matrix an std. dev. vector have inconsistent dimensions."))
-    Σ = Array(Float64, dim1, dim1)
+    Σ = Array{Float64}(undef, dim1, dim1)
     for i in 1:dim1
         for j in 1:dim1
             Σ[i,j] = cor[i,j]*std[i]*std[j]
@@ -26,7 +26,7 @@ end
 #                and excess kurtosis
 function moments(scenarios::Matrix{Float64})
     dim = size(scenarios,1)
-    moms = Array(Float64, dim, 4)
+    moms = Array{Float64}(undef, dim, 4)
     for i in 1:dim
         marg_scens = vec(scenarios[i,:])
         moms[i,1], moms[i,2] = mean_and_std(marg_scens)
@@ -45,11 +45,11 @@ end
 # Returns:
 # - moms (dim x 4) matrix where the columns give the mean, std, skewness
 #                and excess kurtosis
-function moments(scenarios::Matrix{Float64}, probs::Vector{Float64})
+function moments(scenarios::AbstractMatrix, probs::Vector{Float64})
     dim, nscen = size(scenarios)
     length(probs) == nscen || throw(DimensionMismatch("Inconsistent array lengths."))
-    moms = Array(Float64, dim, 4)
-    wv = WeightVec(probs)
+    moms = Array{Float64}(undef, dim, 4)
+    wv = Weights(probs)
     for i in 1:dim
         marg_scens = vec(scenarios[i,:])
         moms[i,1], moms[i,2] = mean_and_std(marg_scens, wv)
@@ -75,8 +75,8 @@ function scengen_HKW!(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64},
     #@assert(dimMoms[2] = 4, "Moments must be input in an n x 4 matrix")
     #@assert(dimCorrs[1] == dimCorrs[2], "Correlation matrix must be square")
     #@assert(dimCorrs[1] == dimMoms[1], "Moment and correlation matrices must have same number of rows")
-    errMom = Array(Float64,1)
-    errCorr = Array(Float64, 1)
+    errMom = Array{Float64}(undef, 1)
+    errCorr = Array{Float64}(undef, 1)
     ccall( (:scengen_HKW_julia, lib),
                 Int64,
                 (Ptr{Float64}, Int64, Ptr{Float64}, Ptr{Float64},
@@ -113,9 +113,9 @@ function scengen_HKW(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64}, numScen:
                      maxTrial::Int64 = 10, maxIter::Int64 = 20)
     formatOfMoms = 4 # Mean, Std. Dev, Skewness, Excess kurtosis 
     dim = size(tgCorrs,1)
-    scenarios = Array(Float64, numScen, dim)
+    scenarios = Array{Float64}(undef, numScen, dim)
     probs = fill(1.0/numScen, numScen)
     scengen_HKW!(tgMoms, tgCorrs, scenarios, probs, maxErrMom, maxErrCor,
                 maxTrial, maxIter, formatOfMoms)
-    return transpose(scenarios)
+    return collect(scenarios')
 end
