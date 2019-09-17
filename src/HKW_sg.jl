@@ -35,7 +35,7 @@ function moments(scenarios::AbstractMatrix, probs::Vector{Float64})
     wv = Weights(probs)
     for i in 1:dim
         marg_scens = vec(scenarios[i,:])
-        moms[i,1], moms[i,2] = mean_and_std(marg_scens, wv)
+        moms[i,1], moms[i,2] = mean_and_std(marg_scens, wv, corrected=false)
         moms[i,3] = skewness(marg_scens, wv, moms[i,1])
         moms[i,4] = kurtosis(marg_scens, wv, moms[i,1])
     end
@@ -44,7 +44,7 @@ end
 
 
 function scengen_HKW!(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64},
-                     outScen::Matrix{Float64}, probs::Array{Float64, 1}, 
+                     outScen::Matrix{Float64}, probs::Array{Float64, 1};
                      maxErrMom::Float64 = 1e-3, maxErrCor = 1e-3,
                      maxTrial::Int64 = 10, maxIter::Int64 = 20,
                      formatOfMoms::Int64 = 4)
@@ -74,27 +74,44 @@ function scengen_HKW!(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64},
     end
 end
 
-# Generates a scenario set which whose marginals have specified first four moments
-# and which has a specified correlation matrix.
-#
-# The specified moments are the mean, standard deviation, skewness and excess kurtosis
-#
-# Arguments:
-# - tgMoms target moments matrix where each row gives the first four moments of a marginal
-# - tgCorrs target correlation matrix
-# - numScen number of scenarios in constructed scenario set
-# - maxErrMom maximum allowed error from target moments
-# - maxErrCor maximum allowed error from target correlations
-# - maxTrial maximum number of times algorithm is restarted with new initial scenarios
-# - maxIter maximum number of iterations in one trial
-function scengen_HKW(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64}, numScen::Int64,
-                     maxErrMom::Float64 = 1e-3, maxErrCor = 1e-3,
-                     maxTrial::Int64 = 10, maxIter::Int64 = 20)
-    formatOfMoms = 4 # Mean, Std. Dev, Skewness, Excess kurtosis 
+
+"""
+    scengen_HKW(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64}, probs::Vector{Float64}; kwargs...)
+    scengen_HKW(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64}, num_scen::Int; kwargs...)
+
+Generate a scenario set whose marginals have specified first four moments
+and which has a specified correlation matrix.
+
+# Arguments
+- `tgMoms::Matrix{Float64}`: target moments matrix where each row gives the first four moments of a marginal
+- `tgCorrs:Matrix{Float64}`: target correlation matrix
+- `probs::Vector{Float64}`: probabilities of generated scenarios
+- `numScen::Int`: if specified instead of `probs`, generates equiprobable `numScen` scenarios
+
+# Keyword Arguments
+- `maxErrMom::Float64`: maximum allowed error in target moments
+- `maxErrCor::Float64`: maximum allowed error in target correlations
+- `maxTrial::Int`: maximum number of times algorithm is restarted with new initial scenarios
+- `maxIter::Int`: maximum number of iterations in one trial
+
+# References
+
+Høyland, K., Kaut, M. & Wallace, S.W. Computational Optimization and Applications (2003) 24: 169. https://doi.org/10.1023/A:1021853807313
+"""
+function scengen_HKW end
+
+function scengen_HKW(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64},
+                     probs::Vector{Float64}; kwargs...)
+    formatOfMoms = 4 # Mean, Std. Dev, Skewness, Excess kurtosis
     dim = size(tgCorrs,1)
+    numScen = length(probs)
     scenarios = Array{Float64}(undef, dim, numScen)
-    probs = fill(1.0/numScen, numScen)
-    scengen_HKW!(tgMoms, tgCorrs, scenarios, probs, maxErrMom, maxErrCor,
-                maxTrial, maxIter, formatOfMoms)
+    scengen_HKW!(tgMoms, tgCorrs, scenarios, probs; kwargs...)
     return scenarios
+end
+
+function scengen_HKW(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64},
+                     numScen::Int64; kwargs...)
+    probs = fill(1.0/numScen, numScen)
+    return scengen_HKW(tgMoms, tgCorrs, probs; kwargs...)
 end
