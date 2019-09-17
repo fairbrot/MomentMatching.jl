@@ -44,12 +44,13 @@ end
 
 
 function scengen_HKW!(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64},
-                     outScen::Matrix{Float64}, probs::Array{Float64, 1};
-                     maxErrMom::Float64 = 1e-3, maxErrCor = 1e-3,
-                     maxTrial::Int64 = 10, maxIter::Int64 = 20,
-                     formatOfMoms::Int64 = 4)
+                      outScen::Matrix{Float64}, probs::Array{Float64, 1};
+                      maxErrMom::Float64 = 1e-3, maxErrCor = 1e-3,
+                      maxTrial::Int64 = 10, maxIter::Int64 = 20, outputLevel::Int64=0)
+    
     dim = size(tgCorrs,1)
     numScen = size(outScen)[2]
+    formatOfMoms::Int64 = 4
     @assert(size(tgMoms, 2) == 4, "Moments must be input in an n x 4 matrix")
     @assert(size(tgCorrs, 1) == size(tgCorrs, 2), "Correlation matrix must be square")
     @assert(size(tgCorrs, 1) == size(tgMoms, 1), "Moment and correlation matrices must have same number of rows")
@@ -64,7 +65,7 @@ function scengen_HKW!(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64},
                  Ptr{Float64}, Ptr{Float64}, Ptr{Int64}, Ptr{Int64}),
                 copy(tgMoms), formatOfMoms, tgCorrs, probs,
                 dim, numScen, outScen, maxErrMom, maxErrCor,
-                TestLevel, maxTrial, maxIter, 0,
+                outputLevel, maxTrial, maxIter, 0,
                 errMom, errCorr, C_NULL, C_NULL)
     if errMom[1] > maxErrMom
         warn("Error in moments is greater than maximum specified error")
@@ -93,6 +94,7 @@ and which has a specified correlation matrix.
 - `maxErrCor::Float64`: maximum allowed error in target correlations
 - `maxTrial::Int`: maximum number of times algorithm is restarted with new initial scenarios
 - `maxIter::Int`: maximum number of iterations in one trial
+- `outputLevel::Int`: level of algorithm run information to be printed to standard output
 
 # References
 
