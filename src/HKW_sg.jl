@@ -21,7 +21,7 @@ function moments(scenarios::Matrix{Float64})
     moms = Array{Float64}(undef, dim, 4)
     for i in 1:dim
         marg_scens = vec(scenarios[i,:])
-        moms[i,1], moms[i,2] = mean_and_std(marg_scens)
+        moms[i,1], moms[i,2] = mean_and_std(marg_scens, corrected=false)
         moms[i,3] = skewness(marg_scens, moms[i,1])
         moms[i,4] = kurtosis(marg_scens, moms[i,1])
     end
@@ -43,23 +43,19 @@ function moments(scenarios::AbstractMatrix, probs::Vector{Float64})
 end
 
 
-# Warning: this function should not be used directly
-#          for the following reasons:
-#  - function assumes inputted scenarios array rows
-#    representing scenario rather than columns
-#  - function may segfault if inconsistent dimensions are used
 function scengen_HKW!(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64},
-                     scenarios::Matrix{Float64}, probs::Array{Float64, 1}, 
+                     outScen::Matrix{Float64}, probs::Array{Float64, 1}, 
                      maxErrMom::Float64 = 1e-3, maxErrCor = 1e-3,
                      maxTrial::Int64 = 10, maxIter::Int64 = 20,
                      formatOfMoms::Int64 = 4)
     dim = size(tgCorrs,1)
-    numScen = size(scenarios)[1]
-    @assert(dimMoms[2] = 4, "Moments must be input in an n x 4 matrix")
-    @assert(dimCorrs[1] == dimCorrs[2], "Correlation matrix must be square")
-    @assert(dimCorrs[1] == dimMoms[1], "Moment and correlation matrices must have same number of rows")
+    numScen = size(outScen)[2]
+    @assert(size(tgMoms, 2) == 4, "Moments must be input in an n x 4 matrix")
+    @assert(size(tgCorrs, 1) == size(tgCorrs, 2), "Correlation matrix must be square")
+    @assert(size(tgCorrs, 1) == size(tgMoms, 1), "Moment and correlation matrices must have same number of rows")
     errMom = Array{Float64}(undef, 1)
     errCorr = Array{Float64}(undef, 1)
+    TestLevel=2
     ccall( (:scengen_HKW_julia, lib),
                 Int64,
                 (Ptr{Float64}, Int64, Ptr{Float64}, Ptr{Float64},
@@ -67,8 +63,8 @@ function scengen_HKW!(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64},
                  Float64, Float64, Int64, Int64, Int64, Int64,
                  Ptr{Float64}, Ptr{Float64}, Ptr{Int64}, Ptr{Int64}),
                 copy(tgMoms), formatOfMoms, tgCorrs, probs,
-                dim, numScen, scenarios, maxErrMom, maxErrCor,
-                0, maxTrial, maxIter, 0,
+                dim, numScen, outScen, maxErrMom, maxErrCor,
+                TestLevel, maxTrial, maxIter, 0,
                 errMom, errCorr, C_NULL, C_NULL)
     if errMom[1] > maxErrMom
         warn("Error in moments is greater than maximum specified error")
@@ -96,9 +92,9 @@ function scengen_HKW(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64}, numScen:
                      maxTrial::Int64 = 10, maxIter::Int64 = 20)
     formatOfMoms = 4 # Mean, Std. Dev, Skewness, Excess kurtosis 
     dim = size(tgCorrs,1)
-    scenarios = Array{Float64}(undef, numScen, dim)
+    scenarios = Array{Float64}(undef, dim, numScen)
     probs = fill(1.0/numScen, numScen)
     scengen_HKW!(tgMoms, tgCorrs, scenarios, probs, maxErrMom, maxErrCor,
                 maxTrial, maxIter, formatOfMoms)
-    return collect(scenarios')
+    return scenarios
 end

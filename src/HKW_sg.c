@@ -407,7 +407,6 @@ int HKW_ScenGen(int const FormatOfMoms, TMatrix const * const p_TarMoms,
 	Mat_Kill(&TrsfMat);
 	Mat_Kill(&TmpOutMat);
 
-
 	// Re-scale the outcomes to the original moments
 	// Assumes that the second target moment is STANDARD DEVIATION
 	//     and that the higher target moments are scaled!!!
@@ -415,6 +414,7 @@ int HKW_ScenGen(int const FormatOfMoms, TMatrix const * const p_TarMoms,
 		for (s=0; s<nScen; s++)
 			p_OutMat->val[i][s] = p_TarMoms->val[0][i]
 			 + p_TarMoms->val[1][i] * p_OutMat->val[i][s];
+
 
 	// copy results to the output pointers
 	if (p_errMom != NULL) *p_errMom = errMom;
@@ -468,38 +468,59 @@ int scengen_HKW(double ** const tgMoms, int const FormatOfMoms,
 	return retVal;
 }
 
+
 int scengen_HKW_julia(double * const tgMoms, int const FormatOfMoms,
 		      double * const tgCorrs, double * const probs,
 		      int const nVar, int const nScen,
-		      double * const outSc,
+		      double * outSc,
 		      double const MaxErrMom, double const MaxErrCorr,
 		      int const TestLevel, int const MaxTrial,
 		      int const MaxIter, int const UseStartValues,
 		      double * p_errMom, double * p_errCorr,
 		      int * p_nmbTrial, int * p_nmbIter)
 {
-  int i;
+
+  int i,j;
   double **tgMoms_dPtr = (double **)calloc(4, sizeof(double*));
   for (i = 0; i < 4; ++i) tgMoms_dPtr[i] = tgMoms + (i*nVar);
+  TMatrix const TarMoms_mat={4, nVar, tgMoms_dPtr};
 
+
+  // Correlations can be easily converted into double pointer
+  // since the matrix is symmetric
   double **tgCorrs_dPtr = (double **)calloc(nVar, sizeof(double*));
   for (i = 0; i < nVar; ++i) tgCorrs_dPtr[i] = tgCorrs + (i*nVar);
+  TMatrix const TgCorrs_mat={nVar, nVar, tgCorrs_dPtr};
 
-  double **outSc_dPtr = (double **)calloc(nVar, sizeof(double*));
-  for (i = 0; i < nVar; ++i) outSc_dPtr[i] = outSc + (i*nScen);
+  // Julia input scenarios are in column major format
+  // where each column corresponds to a scenario
+  TMatrix outSc_mat = Mat_0;
+  Mat_Init(&outSc_mat, nVar, nScen);
+  for (i = 0; i < nVar; ++i) {
+    for (j = 0; j < nScen; ++j) {
+	outSc_mat.val[i][j] = outSc[j*nVar + i];
+    }
+  }
 
-  int retVal = scengen_HKW(tgMoms_dPtr, FormatOfMoms,
-			   tgCorrs_dPtr, probs,
-			   nVar, nScen,
-			   outSc_dPtr,
+  TVector Probs_vec={nScen, probs};
+
+  int retVal = HKW_ScenGen(FormatOfMoms, &TarMoms_mat,
+	                   &TgCorrs_mat, &Probs_vec,
+	                   &outSc_mat,
 			   MaxErrMom, MaxErrCorr,
 			   TestLevel, MaxTrial,
 			   MaxIter, UseStartValues,
 			   p_errMom, p_errCorr,
-			   p_nmbTrial, p_nmbIter);
+	                   p_nmbTrial, p_nmbIter);
 
+  // Copy scenario results into input pointer
+  for (i = 0; i < nVar; ++i) {
+    for (j = 0; j < nScen; ++j) {
+      outSc[j*nVar + i] = outSc_mat.val[i][j];
+    }
+  }
   free(tgMoms_dPtr);
   free(tgCorrs_dPtr);
-  free(outSc_dPtr);
+  Mat_Kill(&outSc_mat);
   return retVal;
 }
