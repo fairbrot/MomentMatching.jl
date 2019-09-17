@@ -84,6 +84,13 @@ DLL_PUBLIC int scengen_HKW(double ** const tgMoms, int const FormatOfMoms,
                            int * p_nmbTrial, int * p_nmbIter);
 
 
+/// wrapper for moment matching scengen_HKW used by Julia interface
+/**
+       Julia matrices are represented by a simple double* arrays rather
+       than double** arrays.
+       This function converts inputted column-major Julia arrays
+       into required format for scengen_HKW function.
+**/
 DLL_PUBLIC int scengen_HKW_julia(double * const tgMoms, int const FormatOfMoms,
 				 double * const tgCorrs, double * const probs,
 				 int const nVar, int const nScen,

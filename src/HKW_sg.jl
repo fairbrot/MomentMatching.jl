@@ -1,14 +1,21 @@
 dir = dirname(@__FILE__())
 const lib =  joinpath(dir, "libHKW_sg.so")
 
-# Calculate the first four moments
-# of multivariate observations.
-#
-# Arguments:
-# - scenarios each column is a realisation of a random vector
-# Returns:
-# - moms (dim x 4) matrix where the columns give the mean, std, skewness
-#                and excess kurtosis
+"""
+    moments(scenarios::Matrix{Float64}, [probs::Vector{Float64}])
+    
+Calculates the first four moments (mean, std, skewness, kurtosis) 
+of multivariate observations and returns as an n x 4 matrix
+where the i-th row gives the moments for the i-th dimension
+of the input matrix.
+
+# Arguments
+- `scenarios::Matrix{Float64}`: input observations where each column
+                                corresponds to a single observation.
+- `probs::Vector{Float64}`: vector containing weights of each observation
+"""
+function moments end
+
 function moments(scenarios::Matrix{Float64})
     dim = size(scenarios,1)
     moms = Array{Float64}(undef, dim, 4)
@@ -21,15 +28,6 @@ function moments(scenarios::Matrix{Float64})
     return moms
 end
 
-# Calculate the first four moments
-# of multivariate observations.
-#
-# Arguments:
-# - scenarios: each column is a realisation of a random vector
-# - probs: vector of probabilities of scenarios
-# Returns:
-# - moms (dim x 4) matrix where the columns give the mean, std, skewness
-#                and excess kurtosis
 function moments(scenarios::AbstractMatrix, probs::Vector{Float64})
     dim, nscen = size(scenarios)
     length(probs) == nscen || throw(DimensionMismatch("Inconsistent array lengths."))
@@ -57,9 +55,9 @@ function scengen_HKW!(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64},
                      formatOfMoms::Int64 = 4)
     dim = size(tgCorrs,1)
     numScen = size(scenarios)[1]
-    #@assert(dimMoms[2] = 4, "Moments must be input in an n x 4 matrix")
-    #@assert(dimCorrs[1] == dimCorrs[2], "Correlation matrix must be square")
-    #@assert(dimCorrs[1] == dimMoms[1], "Moment and correlation matrices must have same number of rows")
+    @assert(dimMoms[2] = 4, "Moments must be input in an n x 4 matrix")
+    @assert(dimCorrs[1] == dimCorrs[2], "Correlation matrix must be square")
+    @assert(dimCorrs[1] == dimMoms[1], "Moment and correlation matrices must have same number of rows")
     errMom = Array{Float64}(undef, 1)
     errCorr = Array{Float64}(undef, 1)
     ccall( (:scengen_HKW_julia, lib),
