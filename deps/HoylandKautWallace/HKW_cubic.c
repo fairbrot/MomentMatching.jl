@@ -31,6 +31,8 @@ double norminf(double vecteur[N]);
 int spofa(double mat[N][N]);
 
 double moment[5][7]={{0}};
+double InMom[13]; /// Input moments: 12 moments + InMom[0]:=1
+double TgMom[4];  /// Target moments
 
 // function that implements the newton method
 double cubic_solve(double *xk){
