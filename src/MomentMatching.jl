@@ -4,6 +4,7 @@ using StatsBase
 
 export scengen_HKW, moments
 
-include("HKW_sg.jl")  
+const LIB_HKW =  normpath(@__DIR__, "../deps/HoylandKautWallace", "libHKW_sg.so")
+include("HKW_sg.jl")
 
 end
