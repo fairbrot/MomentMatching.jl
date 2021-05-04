@@ -59,8 +59,8 @@ int HKW_ScenGen(int const FormatOfMoms, TMatrix const * const p_TarMoms,
 
 	// Variables for the cubic transformation
 	// input data - defined in HKW_cubic.h
-	//extern double InMom[13]; // Input moments + In[0]:=1
-	//extern double TgMom[4];  // Target moments
+	extern double InMom[13]; // Input moments + In[0]:=1
+	extern double TgMom[4];  // Target moments
 	double CubParam[4];        // This is what we want to find
 	int cub_iter;
 	double cub_error;

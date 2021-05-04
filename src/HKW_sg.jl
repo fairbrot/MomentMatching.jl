@@ -1,10 +1,7 @@
-dir = dirname(@__FILE__())
-const lib =  joinpath(dir, "libHKW_sg.so")
-
 """
     moments(scenarios::Matrix{Float64}, [probs::Vector{Float64}])
-    
-Calculates the first four moments (mean, std, skewness, kurtosis) 
+
+Calculates the first four moments (mean, std, skewness, kurtosis)
 of multivariate observations and returns as an n x 4 matrix
 where the i-th row gives the moments for the i-th dimension
 of the input matrix.
@@ -47,7 +44,7 @@ function scengen_HKW!(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64},
                       outScen::Matrix{Float64}, probs::Array{Float64, 1};
                       maxErrMom::Float64 = 1e-3, maxErrCor = 1e-3,
                       maxTrial::Int64 = 10, maxIter::Int64 = 20, outputLevel::Int64=0)
-    
+
     dim = size(tgCorrs,1)
     numScen = size(outScen)[2]
     formatOfMoms::Int64 = 4
@@ -57,7 +54,7 @@ function scengen_HKW!(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64},
     errMom = Array{Float64}(undef, 1)
     errCorr = Array{Float64}(undef, 1)
     TestLevel=2
-    ccall( (:scengen_HKW_julia, lib),
+    ccall( (:scengen_HKW_julia, LIB_HKW),
                 Int64,
                 (Ptr{Float64}, Int64, Ptr{Float64}, Ptr{Float64},
                  Int64, Int64, Ptr{Float64},
