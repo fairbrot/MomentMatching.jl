@@ -65,10 +65,10 @@ function scengen_HKW!(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64},
                 outputLevel, maxTrial, maxIter, 0,
                 errMom, errCorr, C_NULL, C_NULL)
     if errMom[1] > maxErrMom
-        warn("Error in moments is greater than maximum specified error")
+        @warn("Error in moments $(errMom[1]) is greater than maximum specified error $(maxErrMom)")
     end
     if errCorr[1] > maxErrCor
-        warn("Error in correlations is greater than maximum specified error")
+        @warn("Error in correlations $(errCorr[1]) is greater than maximum specified error $(maxErrCor)")
     end
 end
 
@@ -111,6 +111,6 @@ end
 
 function scengen_HKW(tgMoms::Matrix{Float64}, tgCorrs::Matrix{Float64},
                      numScen::Int64; kwargs...)
-    probs = fill(1.0/numScen, numScen)
+    probs = fill(1.0 / numScen, numScen)
     return scengen_HKW(tgMoms, tgCorrs, probs; kwargs...)
 end
